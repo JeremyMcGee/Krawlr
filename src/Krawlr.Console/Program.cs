@@ -111,7 +111,7 @@ namespace Krawlr.Console
                         System.Threading.Thread.Sleep(200);
                     }
 
-                    return 0;
+                    return (int)ExitCode.Success;
                 }
 
                 //container.Resolve<Application>().Start();
@@ -120,8 +120,6 @@ namespace Krawlr.Console
                     System.Threading.Thread.Sleep(200);
                 }
             }
-
-            return (int)ExitCode.Success;
         }
     }
 }
