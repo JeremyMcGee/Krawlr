@@ -4,6 +4,7 @@ using OpenQA.Selenium.Remote;
 using System;
 using System.Diagnostics;
 using MZMemoize.Extensions;
+using OpenQA.Selenium.Firefox;
 
 namespace Krawlr.Core.Services
 {
@@ -30,17 +31,30 @@ namespace Krawlr.Core.Services
             if (_configuration.WebDriver.UseFiddlerProxy)
                 proxy = base.GetProxy(_configuration);
 
+            // HACK
+            proxy = new OpenQA.Selenium.Proxy()
+            {
+                HttpProxy = "proxy01.hiscox.com:8080",
+                SslProxy = "proxy01.hiscox.com:8080",
+                FtpProxy = "proxy01.hiscox.com:8080",
+                Kind = ProxyKind.Manual
+            };
+
             var capabilities = _configuration.WebDriver.Driver.EqualsEx("firefox")
                 ? DesiredCapabilities.Firefox()
                 : DesiredCapabilities.Chrome();
 
             if (proxy != null)
+            {
+                _log.Warn("Adding proxy: " + proxy.ToString());
                 capabilities.SetCapability(CapabilityType.Proxy, proxy);
+            }
 
             if (_configuration.WebDriver.Driver.EqualsEx("firefox"))
             {
                 return new OpenQA.Selenium.Firefox.FirefoxDriver(capabilities);
             }
+
             return new RemoteWebDriver(new Uri("http://localhost:9515"), capabilities);
         }
     }
