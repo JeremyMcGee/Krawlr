@@ -31,10 +31,17 @@ namespace Krawlr.Console
                 log.Exclaim($"Starting Krawler v{typeof(Program).Assembly.GetName().Version}");
                 log.Exclaim($"  with URL {configuration.BaseUrl}");
 
-                if (configuration.Output.ContainsEx("Data Source="))
-                    container.Register<IWriterService, SqlServerWriter>(Reuse.Singleton);
+                if (!configuration.XmlFile.IsNullOrEmpty())
+                {
+                    container.Register<IWriterService, XmlWriter>(Reuse.Singleton);
+                }
                 else
-                    container.Register<IWriterService, CsvWriter>(Reuse.Singleton);
+                {
+                    if (configuration.Output.ContainsEx("Data Source="))
+                        container.Register<IWriterService, SqlServerWriter>(Reuse.Singleton);
+                    else
+                        container.Register<IWriterService, CsvWriter>(Reuse.Singleton);
+                }
 
                 // If running as a client then register the client components.
                 if (configuration.DistributionMode.In(DistributionMode.ClientServer, DistributionMode.Client))
@@ -110,6 +117,9 @@ namespace Krawlr.Console
                     {
                         System.Threading.Thread.Sleep(200);
                     }
+
+                    var writer = container.Resolve<IWriterService>();
+                    writer.Conclude();
 
                     return (int)ExitCode.Success;
                 }

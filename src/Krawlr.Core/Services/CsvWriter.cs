@@ -1,6 +1,7 @@
 ﻿namespace Krawlr.Core.Services
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using Krawlr.Core.Extensions;
     using MZMemoize.Extensions;
@@ -8,9 +9,19 @@
     public interface IWriterService
     {
         void Write(Response response);
+        void Conclude();
     }
 
-    public class CsvWriter : IWriterService
+    abstract public class Writer: IWriterService
+    {
+        abstract public void Write(Response response);
+
+        public virtual void Conclude()
+        {
+        }
+    }
+
+    public class CsvWriter : Writer
     {
         protected IConfiguration _configuration;
         protected ILog _log;
@@ -25,7 +36,7 @@
                 File.Delete(_configuration.Output);
         }
 
-        public void Write(Response response)
+        public override void Write(Response response)
         {
             if (!_configuration.Quiet)
             {

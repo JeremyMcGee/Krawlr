@@ -9,7 +9,7 @@
     using Dapper;
     using System.Linq;
 
-    public class SqlServerWriter : IWriterService
+    public class SqlServerWriter : Writer
     {
         protected IConfiguration _configuration;
         protected ILog _log;
@@ -35,7 +35,7 @@
             _log = log;
         }
 
-        public void Write(Response response)
+        public override void Write(Response response)
         {
             if (!_configuration.Quiet)
             {

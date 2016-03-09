@@ -113,6 +113,7 @@
     <Compile Include="IConfiguration.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Listeners\NavigationListener.cs" />
+    <Compile Include="Services\XmlWriter.cs" />
     <Compile Include="Services\MessageDelivery.cs" />
     <Compile Include="Services\CsvWriter.cs" />
     <Compile Include="Services\PageActionService.cs" />
