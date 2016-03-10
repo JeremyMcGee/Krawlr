@@ -8,6 +8,7 @@
     public class XmlWriter: Writer
     {
         private IConfiguration _configuration;
+        private ILog _log;
         private XElement _rootElement;
         private XElement _resultsElement;
         private int _count;
@@ -15,7 +16,8 @@
         public XmlWriter(IConfiguration configuration, ILog log)
         {
             _configuration = configuration;
-            Debug.WriteLine($"Writing to XML file {_configuration.XmlFile}...");
+            _log = log;
+
             _rootElement = new XElement("test-results");
 
             var environmentElement = new XElement("environment");
@@ -77,8 +79,7 @@
                 File.AppendAllText(_configuration.XmlFile, writer.ToString());
             }
 
-            Debug.WriteLine($"Written to {_configuration.XmlFile}:");
-            Debug.WriteLine(File.ReadAllText(_configuration.XmlFile));
+            _log.Info($"Written XML output in NUnit format to {_configuration.XmlFile}.");
         }
     }
 }
