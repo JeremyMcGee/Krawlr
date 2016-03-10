@@ -65,7 +65,6 @@
         {
             var testSuiteElement = new XElement("test-suite", containedResultsElement);
             testSuiteElement.SetAttributeValue("name", testSuiteName);
-            testSuiteElement.SetAttributeValue("executed", "True");
             testSuiteElement.SetAttributeValue("success", "True");
             testSuiteElement.SetAttributeValue("asserts", "0");
             testSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
