@@ -9,7 +9,6 @@
     {
         private IConfiguration _configuration;
         private ILog _log;
-        private XElement _rootElement;
         private XElement _resultsElement;
         private int _count;
         private decimal _totalTimeMillis;
@@ -18,8 +17,6 @@
         {
             _configuration = configuration;
             _log = log;
-
-            _rootElement = new XElement("test-results");
 
             //var environmentElement = new XElement("environment");
             //environmentElement.SetAttributeValue("nunit-version", "Krawler");
@@ -30,68 +27,84 @@
 
         public override void Write(Response response)
         {
+            _count++;
+
             XElement testCaseElement = new XElement("test-case");
-            testCaseElement.SetAttributeValue("name", response.RelativeUrl);
+            testCaseElement.SetAttributeValue("name", $"Test{_count}");
+            testCaseElement.SetAttributeValue("description", response.RelativeUrl);
             testCaseElement.SetAttributeValue("executed", "True");
             testCaseElement.SetAttributeValue("success", "True");
             testCaseElement.SetAttributeValue("asserts", "0");
             testCaseElement.SetAttributeValue("time", response.TimeTakenMs / 1000);
             _resultsElement.Add(testCaseElement);
 
-            _count++;
             _totalTimeMillis += response.TimeTakenMs;
         }
 
         public override void Conclude()
         {
-            AddTestSuiteNode();
-            AddRootElementAttributes();
-            WriteRootElementToFile();
+            var rootElement = GetTestResultsRootElement();
+            rootElement.Add(GetTestSuiteNode());
+            WriteRootElementToFile(rootElement);
             base.Conclude();
         }
 
-        private void AddRootElementAttributes()
+        private XElement GetTestResultsRootElement()
         {
-            _rootElement.SetAttributeValue("name", "krawler run");
-            _rootElement.SetAttributeValue("date", $"{DateTime.Now:yyyy/MM/dd}");
-            _rootElement.SetAttributeValue("time", $"{DateTime.Now:HH:mm:ss}");
-            _rootElement.SetAttributeValue("total", _count);
-            _rootElement.SetAttributeValue("failures", "0");
-            _rootElement.SetAttributeValue("not-run", "0");
+            var element = new XElement("test-results");
+            element.SetAttributeValue("name", "krawler-run");
+            element.SetAttributeValue("date", $"{DateTime.Now:yyyy/MM/dd}");
+            element.SetAttributeValue("time", $"{DateTime.Now:HH:mm:ss}");
+            element.SetAttributeValue("total", _count);
+            element.SetAttributeValue("failures", "0");
+            element.SetAttributeValue("not-run", "0");
+            return element;
         }
 
-        private void AddTestSuiteNode()
+        private XElement GetTestSuiteElement(string testSuiteName, XElement containedResultsElement)
         {
-            var testSuiteElement = new XElement("test-suite");
-            testSuiteElement.SetAttributeValue("name", "Web site tests");
+            var testSuiteElement = new XElement("test-suite", containedResultsElement);
+            testSuiteElement.SetAttributeValue("name", testSuiteName);
             testSuiteElement.SetAttributeValue("executed", "True");
             testSuiteElement.SetAttributeValue("success", "True");
             testSuiteElement.SetAttributeValue("asserts", "0");
             testSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
-
-            var fixtureTestSuiteElement = new XElement("test-suite", _resultsElement);
-            fixtureTestSuiteElement.SetAttributeValue("name", "Tests");
-            fixtureTestSuiteElement.SetAttributeValue("success", "True");
-            fixtureTestSuiteElement.SetAttributeValue("asserts", "True");
-            fixtureTestSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
-
-            var fixtureResultsElement = new XElement("results", fixtureTestSuiteElement);
-
-            var hostTestSuiteElement = new XElement("test-suite", fixtureResultsElement);
-            hostTestSuiteElement.SetAttributeValue("name", "NUnit");
-            hostTestSuiteElement.SetAttributeValue("success", "True");
-            hostTestSuiteElement.SetAttributeValue("asserts", "True");
-            hostTestSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
-
-            var hostResultsElement = new XElement("results", hostTestSuiteElement);
-
-            testSuiteElement.Add(hostResultsElement);
-            _rootElement.Add(testSuiteElement);
+            return testSuiteElement;
         }
 
-        private void WriteRootElementToFile()
+        private XElement GetResultsElement(string testSuiteName, XElement containedResultsElement)
         {
-            var xmlDocument = new XDocument(new XDeclaration("1.0", "utf-8", "no"), _rootElement);
+            return new XElement(
+                "results", 
+                GetTestSuiteElement(testSuiteName, containedResultsElement)
+            );
+        }
+
+        private XElement GetTestSuiteNode()
+        {
+            return new XElement(
+                GetTestSuiteElement(
+                    "krawler-run", 
+                    GetResultsElement(
+                        "NUnit",
+                        GetResultsElement(
+                            "Tests",
+                            GetResultsElement(
+                                "Assembly",
+                                GetResultsElement(
+                                    "Fixture",
+                                    _resultsElement
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
+        private void WriteRootElementToFile(XElement rootElement)
+        {
+            var xmlDocument = new XDocument(new XDeclaration("1.0", "utf-8", "no"), rootElement);
             using (var writer = new StringWriter())
             {
                 xmlDocument.Save(writer);
