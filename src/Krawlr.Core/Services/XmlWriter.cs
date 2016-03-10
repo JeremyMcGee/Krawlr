@@ -12,6 +12,7 @@
         private XElement _rootElement;
         private XElement _resultsElement;
         private int _count;
+        private decimal _totalTimeMillis;
 
         public XmlWriter(IConfiguration configuration, ILog log)
         {
@@ -32,9 +33,12 @@
             XElement testCaseElement = new XElement("test-case");
             testCaseElement.SetAttributeValue("name", response.RelativeUrl);
             testCaseElement.SetAttributeValue("executed", "True");
+            testCaseElement.SetAttributeValue("asserts", "0");
             testCaseElement.SetAttributeValue("time", response.TimeTakenMs / 1000);
             _resultsElement.Add(testCaseElement);
+
             _count++;
+            _totalTimeMillis += response.TimeTakenMs;
         }
 
         public override void Conclude()
@@ -51,6 +55,8 @@
             _rootElement.SetAttributeValue("date", $"{DateTime.Now:yyyy/MM/dd}");
             _rootElement.SetAttributeValue("time", $"{DateTime.Now:HH:mm:ss}");
             _rootElement.SetAttributeValue("total", _count);
+            _rootElement.SetAttributeValue("failures", "0");
+            _rootElement.SetAttributeValue("not-run", "0");
         }
 
         private void AddTestSuiteNode()
@@ -59,6 +65,9 @@
             testSuiteElement.SetAttributeValue("name", "Web site tests");
             testSuiteElement.SetAttributeValue("executed", "True");
             testSuiteElement.SetAttributeValue("success", "True");
+            testSuiteElement.SetAttributeValue("asserts", "0");
+            testSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
+
             testSuiteElement.Add(_resultsElement);
 
             _rootElement.Add(testSuiteElement);
