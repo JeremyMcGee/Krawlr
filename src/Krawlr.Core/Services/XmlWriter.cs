@@ -79,7 +79,7 @@
                 File.AppendAllText(_configuration.XmlFile, writer.ToString());
             }
 
-            _log.Info($"Written XML output in NUnit format to {_configuration.XmlFile}.");
+            _log.Info($"Written XML output in NUnit format to {Path.GetFullPath(_configuration.XmlFile)}.");
         }
     }
 }
