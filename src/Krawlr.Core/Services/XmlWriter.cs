@@ -21,9 +21,9 @@
 
             _rootElement = new XElement("test-results");
 
-            var environmentElement = new XElement("environment");
-            environmentElement.SetAttributeValue("nunit-version", "Krawler");
-            _rootElement.Add(environmentElement);
+            //var environmentElement = new XElement("environment");
+            //environmentElement.SetAttributeValue("nunit-version", "Krawler");
+            //_rootElement.Add(environmentElement);
 
             _resultsElement = new XElement("results");
         }
@@ -69,8 +69,23 @@
             testSuiteElement.SetAttributeValue("asserts", "0");
             testSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
 
-            testSuiteElement.Add(_resultsElement);
+            var fixtureTestSuiteElement = new XElement("test-suite", _resultsElement);
+            fixtureTestSuiteElement.SetAttributeValue("name", "Tests");
+            fixtureTestSuiteElement.SetAttributeValue("success", "True");
+            fixtureTestSuiteElement.SetAttributeValue("asserts", "True");
+            fixtureTestSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
 
+            var fixtureResultsElement = new XElement("results", fixtureTestSuiteElement);
+
+            var hostTestSuiteElement = new XElement("test-suite", fixtureResultsElement);
+            hostTestSuiteElement.SetAttributeValue("name", "NUnit");
+            hostTestSuiteElement.SetAttributeValue("success", "True");
+            hostTestSuiteElement.SetAttributeValue("asserts", "True");
+            hostTestSuiteElement.SetAttributeValue("time", _totalTimeMillis / 1000);
+
+            var hostResultsElement = new XElement("results", hostTestSuiteElement);
+
+            testSuiteElement.Add(hostResultsElement);
             _rootElement.Add(testSuiteElement);
         }
 
