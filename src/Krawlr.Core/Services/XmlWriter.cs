@@ -33,6 +33,7 @@
             XElement testCaseElement = new XElement("test-case");
             testCaseElement.SetAttributeValue("name", response.RelativeUrl);
             testCaseElement.SetAttributeValue("executed", "True");
+            testCaseElement.SetAttributeValue("success", "True");
             testCaseElement.SetAttributeValue("asserts", "0");
             testCaseElement.SetAttributeValue("time", response.TimeTakenMs / 1000);
             _resultsElement.Add(testCaseElement);
