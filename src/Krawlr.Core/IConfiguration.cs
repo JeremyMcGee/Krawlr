@@ -29,6 +29,7 @@
         IEnumerable<string> Inclusions { get; }
         string Output { get; }
         string XmlFile { get; }
+        string ProxyServer { get; }
         string Metadata { get; }
 
         // Configuration settings for WebDriver

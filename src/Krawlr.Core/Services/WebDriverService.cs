@@ -31,14 +31,17 @@ namespace Krawlr.Core.Services
             if (_configuration.WebDriver.UseFiddlerProxy)
                 proxy = base.GetProxy(_configuration);
 
-            // HACK
-            proxy = new OpenQA.Selenium.Proxy()
+
+            if (!string.IsNullOrWhiteSpace(_configuration.ProxyServer))
             {
-                HttpProxy = "proxy01.hiscox.com:8080",
-                SslProxy = "proxy01.hiscox.com:8080",
-                FtpProxy = "proxy01.hiscox.com:8080",
-                Kind = ProxyKind.Manual
-            };
+                proxy = new OpenQA.Selenium.Proxy()
+                {
+                    HttpProxy = _configuration.ProxyServer,
+                    SslProxy = _configuration.ProxyServer,
+                    FtpProxy = _configuration.ProxyServer,
+                    Kind = ProxyKind.Manual
+                };
+            }
 
             var capabilities = _configuration.WebDriver.Driver.EqualsEx("firefox")
                 ? DesiredCapabilities.Firefox()

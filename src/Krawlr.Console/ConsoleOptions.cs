@@ -52,6 +52,9 @@ namespace Krawlr.Core
                 { "webdriver-proxy", "Using Chrome or Remote should route via Fiddler Core?", v => WebDriver.UseFiddlerProxy = v != null },
                 { "webdriver-proxy-port", "If WebDriver proxy is engaged define the port to use. (Default: 0 (autoselect))", v => WebDriver.FiddlerProxyPort = int.Parse(v) },
 
+                // Proxy
+                { "p|proxy=", "Define proxy server to use, e.g. http://proxy01:8080", v => ProxyServer = v },
+
                 // Mode
                 { "mode=", "Disibution mode use to use: clientserver, server, client (if server & client a running RabbitMQ server is required)", v => DistributionMode = (DistributionMode)Enum.Parse(typeof(DistributionMode), v, true) },
 
@@ -84,6 +87,7 @@ namespace Krawlr.Core
         public bool IgnoreLinks { get; protected set; }
         public bool IgnoreGuids { get; protected set; }
         public int MaxPageLinksToFollow { get; protected set; }
+        public string ProxyServer { get; protected set; }
 
         public string ExclusionsFilePath { get; protected set; }
         public string InclusionsFilePath { get; protected set; }
