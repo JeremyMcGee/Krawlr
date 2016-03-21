@@ -1,17 +1,21 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using Krawlr.Core.Extensions;
-using System.Linq;
-using MZMemoize;
-using MZMemoize.Extensions;
-using NDesk.Options;
-
-namespace Krawlr.Core
+﻿namespace Krawlr.Console
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+
+    using MZMemoize;
+    using MZMemoize.Extensions;
+
+    using NDesk.Options;
+
+    using Core;
+    using Core.Extensions;
+
     public class ConsoleConfiguration : IConfiguration
     {
-        public bool HasError { get; protected set; }
+        public bool HasError { get; private set; }
 
         public ConsoleConfiguration(string[] args)
         {
@@ -24,7 +28,7 @@ namespace Krawlr.Core
             Parse(args);
         }
 
-        protected void Parse(string[] args)
+        private void Parse(string[] args)
         {
             WebDriver = new ConfigurationWebDriver();
 
@@ -58,20 +62,20 @@ namespace Krawlr.Core
                 // Mode
                 { "mode=", "Disibution mode use to use: clientserver, server, client (if server & client a running RabbitMQ server is required)", v => DistributionMode = (DistributionMode)Enum.Parse(typeof(DistributionMode), v, true) },
 
-                { "h|?|help", "Show this message and exit.", v => showHelp = v != null },
+                { "h|?|help", "Show this message and exit.", v => showHelp = v != null }
             };
-            List<string> extra = optionSet.Parse(args);
+            var extra = optionSet.Parse(args);
 
             if (!BaseUrl.HasValue() && DistributionMode.In(DistributionMode.ClientServer, DistributionMode.Server))
             {
-                System.Console.WriteLine("BaseUrl is a required commandline argument to run the app as a Server.");
+                Console.WriteLine("BaseUrl is a required commandline argument to run the app as a Server.");
                 HasError = true;
             }
 
             if (extra.Any())
             {
                 HasError = true;
-                System.Console.WriteLine($"The following options are being ignored: {String.Join(", ", extra)}");
+                Console.WriteLine($"The following options are being ignored: { string.Join(", ", extra) }");
             }
 
             if (showHelp || HasError)
@@ -81,8 +85,7 @@ namespace Krawlr.Core
             }
         }
 
-        public string BaseUrl { get; protected set; }
-
+        public string BaseUrl { get; private set; }
         public bool Quiet { get; protected set; }
         public bool IgnoreLinks { get; protected set; }
         public bool IgnoreGuids { get; protected set; }
@@ -96,8 +99,8 @@ namespace Krawlr.Core
         public string XmlFile { get; protected set; }
         public string Metadata { get; protected set; }
 
-        public IEnumerable<string> Exclusions { get { return readFile(ExclusionsFilePath); } }
-        public IEnumerable<string> Inclusions { get { return readFile(InclusionsFilePath); } }
+        public IEnumerable<string> Exclusions => ReadFile(ExclusionsFilePath);
+        public IEnumerable<string> Inclusions => ReadFile(InclusionsFilePath);
 
         // WebDriver configuration and Fiddler proxy
         public IConfigurationWebDriver WebDriver { get; set; }
@@ -118,7 +121,7 @@ namespace Krawlr.Core
             public bool UseFiddlerProxy { get; set; }
         }
 
-        static Func<string, IEnumerable<string>> readFile = new Func<string, IEnumerable<string>>(path =>
+        static readonly Func<string, IEnumerable<string>> ReadFile = new Func<string, IEnumerable<string>>(path =>
         {
             // Ignore any lines that start with backticks "`". They're treated as comments
             var result = path.ExistsEx()
@@ -134,6 +137,7 @@ namespace Krawlr.Core
 
             return result;
         })
-        .Memoize(threadSafe: true);
+
+        .Memoize(true);
     }
 }

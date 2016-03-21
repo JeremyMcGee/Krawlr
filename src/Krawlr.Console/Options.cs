@@ -128,7 +128,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
@@ -157,9 +156,10 @@ namespace NDesk.Options {
 
 		#region ICollection
 		void ICollection.CopyTo (Array array, int index)  {(values as ICollection).CopyTo (array, index);}
-		bool ICollection.IsSynchronized                   {get {return (values as ICollection).IsSynchronized;}}
-		object ICollection.SyncRoot                       {get {return (values as ICollection).SyncRoot;}}
-		#endregion
+		bool ICollection.IsSynchronized => (values as ICollection).IsSynchronized;
+	    object ICollection.SyncRoot => (values as ICollection).SyncRoot;
+
+	    #endregion
 
 		#region ICollection<T>
 		public void Add (string item)                       {values.Add (item);}
@@ -167,9 +167,10 @@ namespace NDesk.Options {
 		public bool Contains (string item)                  {return values.Contains (item);}
 		public void CopyTo (string[] array, int arrayIndex) {values.CopyTo (array, arrayIndex);}
 		public bool Remove (string item)                    {return values.Remove (item);}
-		public int Count                                    {get {return values.Count;}}
-		public bool IsReadOnly                              {get {return false;}}
-		#endregion
+		public int Count => values.Count;
+	    public bool IsReadOnly => false;
+
+	    #endregion
 
 		#region IEnumerable
 		IEnumerator IEnumerable.GetEnumerator () {return values.GetEnumerator ();}
@@ -186,8 +187,8 @@ namespace NDesk.Options {
 		void IList.Insert (int index, object value) {(values as IList).Insert (index, value);}
 		void IList.Remove (object value)            {(values as IList).Remove (value);}
 		void IList.RemoveAt (int index)             {(values as IList).RemoveAt (index);}
-		bool IList.IsFixedSize                      {get {return false;}}
-		object IList.this [int index]               {get {return this [index];} set {(values as IList)[index] = value;}}
+		bool IList.IsFixedSize => false;
+	    object IList.this [int index]               {get {return this [index];} set {(values as IList)[index] = value;}}
 		#endregion
 
 		#region IList<T>
@@ -245,7 +246,7 @@ namespace NDesk.Options {
 		public OptionContext (OptionSet set)
 		{
 			this.set = set;
-			this.c   = new OptionValueCollection (this);
+			c   = new OptionValueCollection (this);
 		}
 
 		public Option Option {
@@ -263,19 +264,15 @@ namespace NDesk.Options {
 			set {index = value;}
 		}
 
-		public OptionSet OptionSet {
-			get {return set;}
-		}
+		public OptionSet OptionSet => set;
 
-		public OptionValueCollection OptionValues {
-			get {return c;}
-		}
+	    public OptionValueCollection OptionValues => c;
 	}
 
 	public enum OptionValueType {
 		None, 
 		Optional,
-		Required,
+		Required
 	}
 
 	public abstract class Option {
@@ -300,34 +297,34 @@ namespace NDesk.Options {
 				throw new ArgumentOutOfRangeException ("maxValueCount");
 
 			this.prototype   = prototype;
-			this.names       = prototype.Split ('|');
+			names       = prototype.Split ('|');
 			this.description = description;
-			this.count       = maxValueCount;
-			this.type        = ParsePrototype ();
+			count       = maxValueCount;
+			type        = ParsePrototype ();
 
-			if (this.count == 0 && type != OptionValueType.None)
+			if (count == 0 && type != OptionValueType.None)
 				throw new ArgumentException (
 						"Cannot provide maxValueCount of 0 for OptionValueType.Required or " +
 							"OptionValueType.Optional.",
 						"maxValueCount");
-			if (this.type == OptionValueType.None && maxValueCount > 1)
+			if (type == OptionValueType.None && maxValueCount > 1)
 				throw new ArgumentException (
 						string.Format ("Cannot provide maxValueCount of {0} for OptionValueType.None.", maxValueCount),
 						"maxValueCount");
 			if (Array.IndexOf (names, "<>") >= 0 && 
-					((names.Length == 1 && this.type != OptionValueType.None) ||
-					 (names.Length > 1 && this.MaxValueCount > 1)))
+					((names.Length == 1 && type != OptionValueType.None) ||
+					 (names.Length > 1 && MaxValueCount > 1)))
 				throw new ArgumentException (
 						"The default option handler '<>' cannot require values.",
 						"prototype");
 		}
 
-		public string           Prototype       {get {return prototype;}}
-		public string           Description     {get {return description;}}
-		public OptionValueType  OptionValueType {get {return type;}}
-		public int              MaxValueCount   {get {return count;}}
+		public string           Prototype => prototype;
+	    public string           Description => description;
+	    public OptionValueType  OptionValueType => type;
+	    public int              MaxValueCount => count;
 
-		public string[] GetNames ()
+	    public string[] GetNames ()
 		{
 			return (string[]) names.Clone ();
 		}
@@ -357,10 +354,10 @@ namespace NDesk.Options {
 			return t;
 		}
 
-		internal string[] Names           {get {return names;}}
-		internal string[] ValueSeparators {get {return separators;}}
+		internal string[] Names => names;
+	    internal string[] ValueSeparators => separators;
 
-		static readonly char[] NameTerminator = new char[]{'=', ':'};
+	    static readonly char[] NameTerminator = {'=', ':'};
 
 		private OptionValueType ParsePrototype ()
 		{
@@ -393,11 +390,11 @@ namespace NDesk.Options {
 						"prototype");
 			if (count > 1) {
 				if (seps.Count == 0)
-					this.separators = new string[]{":", "="};
+					separators = new[]{":", "="};
 				else if (seps.Count == 1 && seps [0].Length == 0)
-					this.separators = null;
+					separators = null;
 				else
-					this.separators = seps.ToArray ();
+					separators = seps.ToArray ();
 			}
 
 			return type == '=' ? OptionValueType.Required : OptionValueType.Optional;
@@ -462,26 +459,24 @@ namespace NDesk.Options {
 		public OptionException (string message, string optionName)
 			: base (message)
 		{
-			this.option = optionName;
+			option = optionName;
 		}
 
 		public OptionException (string message, string optionName, Exception innerException)
 			: base (message, innerException)
 		{
-			this.option = optionName;
+			option = optionName;
 		}
 
 		protected OptionException (SerializationInfo info, StreamingContext context)
 			: base (info, context)
 		{
-			this.option = info.GetString ("OptionName");
+			option = info.GetString ("OptionName");
 		}
 
-		public string OptionName {
-			get {return this.option;}
-		}
+		public string OptionName => option;
 
-		[SecurityPermission (SecurityAction.LinkDemand, SerializationFormatter = true)]
+	    [SecurityPermission (SecurityAction.LinkDemand, SerializationFormatter = true)]
 		public override void GetObjectData (SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData (info, context);
@@ -505,11 +500,9 @@ namespace NDesk.Options {
 
 		Converter<string, string> localizer;
 
-		public Converter<string, string> MessageLocalizer {
-			get {return localizer;}
-		}
+		public Converter<string, string> MessageLocalizer => localizer;
 
-		protected override string GetKeyForItem (Option item)
+	    protected override string GetKeyForItem (Option item)
 		{
 			if (item == null)
 				throw new ArgumentNullException ("option");
@@ -821,7 +814,7 @@ namespace NDesk.Options {
 			if (option != null)
 				foreach (string o in c.Option.ValueSeparators != null 
 						? option.Split (c.Option.ValueSeparators, StringSplitOptions.None)
-						: new string[]{option}) {
+						: new[]{option}) {
 					c.OptionValues.Add (o);
 				}
 			if (c.OptionValues.Count == c.Option.MaxValueCount || 
@@ -858,7 +851,7 @@ namespace NDesk.Options {
 				return false;
 			for (int i = 0; i < n.Length; ++i) {
 				Option p;
-				string opt = f + n [i].ToString ();
+				string opt = f + n [i];
 				string rn = n [i].ToString ();
 				if (!Contains (rn)) {
 					if (i == 0)
@@ -983,9 +976,9 @@ namespace NDesk.Options {
 				return maxIndex == 1 ? "VALUE" : "VALUE" + (index + 1);
 			string[] nameStart;
 			if (maxIndex == 1)
-				nameStart = new string[]{"{0:", "{"};
+				nameStart = new[]{"{0:", "{"};
 			else
-				nameStart = new string[]{"{" + index + ":"};
+				nameStart = new[]{"{" + index + ":"};
 			for (int i = 0; i < nameStart.Length; ++i) {
 				int start, j = 0;
 				do {

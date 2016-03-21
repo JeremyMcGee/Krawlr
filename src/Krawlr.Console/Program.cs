@@ -1,11 +1,10 @@
-﻿using DryIoc;
+﻿using System.Threading;
+using DryIoc;
 using Krawlr.Core;
-using Krawlr.Core.Services;
 using Krawlr.Core.Extensions;
-using ServiceStack;
-using ServiceStack.Messaging;
-using System.Linq;
+using Krawlr.Core.Services;
 using MZMemoize.Extensions;
+using ServiceStack;
 
 namespace Krawlr.Console
 {
@@ -14,7 +13,7 @@ namespace Krawlr.Console
         enum ExitCode
         {
             Success = 0,
-            InvalidArgs,
+            InvalidArgs
         }
 
         static int Main(string[] args)
@@ -53,7 +52,7 @@ namespace Krawlr.Console
                 }
 
                 container.Register<IMessageQueueServer, MessageQueueServer>();
-                container.RegisterDelegate<IMessageService>(r => r.Resolve<IMessageQueueServer>().Instance(), Reuse.Singleton);
+                container.RegisterDelegate(r => r.Resolve<IMessageQueueServer>().Instance(), Reuse.Singleton);
 
                 if (configuration.DistributionMode.In(DistributionMode.ClientServer, DistributionMode.Client))
                 {
@@ -115,7 +114,7 @@ namespace Krawlr.Console
 
                     while (queueService.Peek)
                     {
-                        System.Threading.Thread.Sleep(200);
+                        Thread.Sleep(200);
                     }
 
                     var writer = container.Resolve<IWriterService>();
@@ -127,7 +126,7 @@ namespace Krawlr.Console
                 //container.Resolve<Application>().Start();
                 while (true)
                 {
-                    System.Threading.Thread.Sleep(200);
+                    Thread.Sleep(200);
                 }
             }
         }
