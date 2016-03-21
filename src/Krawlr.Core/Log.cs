@@ -26,6 +26,10 @@ namespace Krawlr.Core
             Console.ForegroundColor = color;
             Console.WriteLine(s);
             Console.ResetColor();
+
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine(s, "Output");
+#endif
         }
 
         public void Debug(string s)
