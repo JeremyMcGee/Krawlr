@@ -1,4 +1,6 @@
-﻿namespace Krawlr.Core.Services
+﻿using System.Text;
+
+namespace Krawlr.Core.Services
 {
     using System;
     using System.IO;
@@ -59,9 +61,9 @@
         private void WriteRootElementToFile(XElement rootElement)
         {
             var xmlDocument = new XDocument(new XDeclaration("1.0", "utf-8", "no"), rootElement);
-            using (var writer = new StringWriter())
+            using (var writer = new Utf8StringWriter())
             {
-                xmlDocument.Save(writer);
+                xmlDocument.Save(writer, SaveOptions.None);
 
                 if (File.Exists(_configuration.XmlFile))
                 {
@@ -72,6 +74,10 @@
             }
 
             _log.Info($"Written XML output in JUnit format to {Path.GetFullPath(_configuration.XmlFile)}.");
+        }
+        private class Utf8StringWriter : StringWriter
+        {
+            public override Encoding Encoding => Encoding.UTF8;
         }
     }
 }
